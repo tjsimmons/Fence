@@ -2,6 +2,7 @@
 #include <ESP8266WiFi.h>
 
 /*
+https://github.com/esp8266/Arduino/blob/master/doc/esp8266wifi/readme.md#quick-start
 TODO:
   On device initialization, run as a AP with web server
   Connect to device from a computer, and from a dropdown
