@@ -54,6 +54,7 @@ void loop() {
 void displayNetworks(int numNetworks) {
         for (int i=0; i < numNetworks; i++) {
                 Serial.println(WiFi.SSID(i));
-
         }
+
+        Serial.println();
 }
