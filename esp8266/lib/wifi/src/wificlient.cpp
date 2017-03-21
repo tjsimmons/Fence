@@ -1,6 +1,7 @@
 #include <ESP8266WiFi.h>
+#include "wificlient.h"
 
-void asetup() {
+void connect() {
         pinMode(LED_BUILTIN, OUTPUT);
 
         digitalWrite(LED_BUILTIN, LOW);
@@ -21,7 +22,4 @@ void asetup() {
         digitalWrite(LED_BUILTIN, HIGH);
         Serial.print("Connected, IP address: " );
         Serial.println(WiFi.localIP());
-}
-
-void aloop() {
 }
