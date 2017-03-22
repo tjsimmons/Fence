@@ -30,7 +30,6 @@ Esp8266Configuration configuration;
 ESP8266WebServer     server(80);
 
 int  numNetworks = 0;
-int  wifiRetries = 30;
 bool configured;
 
 void setup() {
@@ -55,19 +54,15 @@ void setup() {
 
         while (WiFi.status() != WL_CONNECTED) {
             delay(500);
-            wifiRetries--;
 
-            if (wifiRetries < 1) {
-                Serial.println("WiFi failed");
-                return;
-            }
             Serial.print(".");
         }
 
         Serial.println("");
         Serial.println("WiFi connected");
-        Serial.println("IP address: ");
-        Serial.println(WiFi.localIP());
+        Serial.print("IP address: ");
+        Serial.print(WiFi.localIP());
+        Serial.println();
     }
 }
 
@@ -78,6 +73,8 @@ void loop() {
 }
 
 void startServer() {
+    WiFi.mode(WIFI_AP);
+
     delay(500);
 
     Serial.print("Starting up softAP...");
