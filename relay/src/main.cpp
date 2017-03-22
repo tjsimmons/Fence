@@ -14,16 +14,24 @@
    and calls home to our web service for commands.
  */
 #include <ESP8266WiFi.h>
+// #include <FS.h>
+#include <Esp8266Configuration.h>
+#include <ESP8266WebServer.h>
+
 #include "softap.h"
+#include "wifiscan.h"
+#include "webserver.h"
 
 void setup() {
         Serial.begin(115200);
         Serial.println();
 
-        startSoftAP();
+// check Configuration for details
+// if none exist, startServer
+        startServer();
+        // else join the network
 }
 
 void loop() {
-        Serial.printf("Clients connected: %d\n", WiFi.softAPgetStationNum());
-        delay(5000);
+        handleClient();
 }
