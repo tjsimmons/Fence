@@ -19,21 +19,21 @@
 #include <Esp8266Configuration.h>
 #include <ESP8266WebServer.h>
 
-#include "softap.h"
-#include "wifiscan.h"
 #include "webserver.h"
 
 Esp8266Configuration configuration;
+
+bool configured;
 
 void setup() {
     Serial.begin(115200);
     Serial.println();
 
+    // check Configuration for details
+    // if none exist, startServer
     if (!configuration.isWifiStationConfigurationValid()) {
         Serial.println("Wifi configuration is invalid; starting server to prompt for details");
-
-        // check Configuration for details
-        // if none exist, startServer
+        configured = false;
         startServer();
     }
 
@@ -41,5 +41,7 @@ void setup() {
 }
 
 void loop() {
-    handleClient();
+    if (!configured) {
+        handleClient();
+    }
 }
