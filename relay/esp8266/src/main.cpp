@@ -14,6 +14,7 @@
    and calls home to our web service for commands.
  */
 #include <ESP8266WiFi.h>
+
 // #include <FS.h>
 #include <Esp8266Configuration.h>
 #include <ESP8266WebServer.h>
@@ -22,16 +23,23 @@
 #include "wifiscan.h"
 #include "webserver.h"
 
-void setup() {
-        Serial.begin(115200);
-        Serial.println();
+Esp8266Configuration configuration;
 
-// check Configuration for details
-// if none exist, startServer
+void setup() {
+    Serial.begin(115200);
+    Serial.println();
+
+    if (!configuration.isWifiStationConfigurationValid()) {
+        Serial.println("Wifi configuration is invalid; starting server to prompt for details");
+
+        // check Configuration for details
+        // if none exist, startServer
         startServer();
-        // else join the network
+    }
+
+    // else join the network
 }
 
 void loop() {
-        handleClient();
+    handleClient();
 }
