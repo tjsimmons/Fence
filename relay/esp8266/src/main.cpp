@@ -22,7 +22,6 @@
 using namespace std;
 
 void startServer();
-void handleClient();
 void handleRoot();
 void handleSave();
 
@@ -68,7 +67,7 @@ void setup() {
 
 void loop() {
     if (!configured) {
-        handleClient();
+        server.handleClient();
     } else {}
 }
 
@@ -150,8 +149,4 @@ void handleSave() {
 
         server.send(200, "text/html", "OK");
     }
-}
-
-void handleClient() {
-    server.handleClient();
 }
