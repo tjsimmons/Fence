@@ -19,10 +19,18 @@
 #include <Esp8266Configuration.h>
 #include <ESP8266WebServer.h>
 
-#include "webserver.h"
+using namespace std;
+
+void startServer();
+void handleClient();
+void handleRoot();
+void handleSave();
 
 Esp8266Configuration configuration;
+ESP8266WebServer     server(80);
 
+int  numNetworks = 0;
+int  wifiRetries = 30;
 bool configured;
 
 void setup() {
@@ -30,18 +38,123 @@ void setup() {
     Serial.println();
 
     // check Configuration for details
+    configuration.read();
+
     // if none exist, startServer
     if (!configuration.isWifiStationConfigurationValid()) {
         Serial.println("Wifi configuration is invalid; starting server to prompt for details");
         configured = false;
         startServer();
-    }
+    } else {
+        Serial.printf("Connecting to %s\n", configuration.getWifiStationSsid());
 
-    // else join the network
+        // else join the network
+        WiFi.mode(WIFI_STA);
+        WiFi.enableSTA(true);
+        WiFi.begin(configuration.getWifiStationSsid(), configuration.getWifiStationPassword());
+
+        while (WiFi.status() != WL_CONNECTED) {
+            delay(500);
+            wifiRetries--;
+
+            if (wifiRetries < 1) {
+                Serial.println("WiFi failed");
+                return;
+            }
+            Serial.print(".");
+        }
+
+        Serial.println("");
+        Serial.println("WiFi connected");
+        Serial.println("IP address: ");
+        Serial.println(WiFi.localIP());
+    }
 }
 
 void loop() {
     if (!configured) {
         handleClient();
+    } else {}
+}
+
+void startServer() {
+    delay(500);
+
+    Serial.print("Starting up softAP...");
+    Serial.println(WiFi.softAP("ESP8266") ? "Ready" : "Not Ready");
+
+    IPAddress myIP = WiFi.softAPIP();
+    Serial.print("AP IP address: ");
+    Serial.println(myIP);
+    server.on("/",     handleRoot);
+    server.on("/save", HTTP_POST, handleSave);
+    server.begin();
+    Serial.println("HTTP server started");
+}
+
+/* Just a little test message.Go to http:   //192.168.4.1 in a web browser
+ * connected to this access point to see it.
+ */
+void handleRoot() {
+    // scan for networks
+    numNetworks = WiFi.scanNetworks(false, true);
+    Serial.printf("%d networks found\n", numNetworks);
+
+    String form1 = "<!DOCTYPE html>"
+                   "<html>"
+                   "<head>"
+                   "<title>Pikaboo Network Connection</title>"
+                   "</head>"
+                   "<body>"
+                   "<form action='/save' method='post'>"
+                   "<select name='ssid'>";
+
+    String form2 = "</select>"
+                   "<br />"
+                   "<input type='text' name='password'>"
+                   "<br />"
+                   "<input type='submit' />"
+                   "</form>"
+                   "</body>"
+                   "</html>";
+
+    for (int i = 0; i < numNetworks; i++) {
+        String ssid = "<option value='" + WiFi.SSID(i) + "'>" + WiFi.SSID(i) + "</option>";
+
+        form1 = form1 + ssid;
     }
+
+    server.send(200, "text/html", form1 + form2);
+}
+
+void handleSave() {
+    if (server.hasArg("ssid") && server.hasArg("password")) {
+        String pSSID     = server.arg("ssid");
+        String pPassword = server.arg("password");
+
+        Serial.println(pSSID);
+        Serial.println(pPassword);
+
+        char *ssid = new char[pSSID.length()];
+        strcpy(ssid, pSSID.c_str());
+
+        Serial.println(ssid);
+
+        char *password = new char[pPassword.length()];
+        strcpy(password, pPassword.c_str());
+
+        Serial.println(password);
+
+        configuration.setWifiStationSsid(ssid);
+        configuration.setWifiStationPassword(password);
+        configuration.write();
+
+        Serial.println("Configuration set");
+
+        server.send(200, "text/html", "OK");
+    }
+}
+
+void handleClient() {
+    server.handleClient();
 }
